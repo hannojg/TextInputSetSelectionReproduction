@@ -69,6 +69,11 @@ const App = () => {
   return (
     <SafeAreaView style={styles.contentContainer}>
       <Modal visible={isModalVisible}>
+        <View
+          style={{
+            paddingTop: 60,
+          }}
+        />
         <Button
           title="Add emoji"
           onPress={() => {
