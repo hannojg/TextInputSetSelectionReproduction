@@ -1,9 +1,32 @@
 import React, {useRef, useCallback, useState} from 'react';
-import {Button, SafeAreaView, StyleSheet, TextInput} from 'react-native';
+import {
+  Button,
+  View,
+  Modal,
+  SafeAreaView,
+  StyleSheet,
+  TextInput,
+  Keyboard,
+} from 'react-native';
 
 const INITIAL_TEXT = 'Select THIS part of the text (Then press btn)';
 
+function fibonacci(n) {
+  if (n <= 2) {
+    return 1;
+  } else {
+    return fibonacci(n - 1) + fibonacci(n - 2);
+  }
+}
+
+const makeJSBusy = () => {
+  const n = 30;
+  fibonacci(n);
+};
+
 const App = () => {
+  const [isModalVisible, setIsModalVisible] = useState(false);
+
   const textInputRef = useRef(null);
   const [value, setValue] = useState(INITIAL_TEXT);
 
@@ -13,10 +36,11 @@ const App = () => {
   });
 
   const onSelectionChange = useCallback(event => {
+    console.log('onSelectionChange', event.nativeEvent.selection);
     selection.current = event.nativeEvent.selection;
   }, []);
 
-  const setSelectionToEnd = useCallback(async () => {
+  const addEmojiToText = useCallback(async () => {
     const emoji = '👍';
     setValue(prev => {
       const textWithEmojiReplaced =
@@ -34,6 +58,7 @@ const App = () => {
 
     // update selection after the text has been updated
     requestAnimationFrame(() => {
+      console.log('setSelection', selectionAfterEmoji);
       textInputRef.current?.setSelection(
         selectionAfterEmoji,
         selectionAfterEmoji,
@@ -43,10 +68,29 @@ const App = () => {
 
   return (
     <SafeAreaView style={styles.contentContainer}>
-      <Button
-        onPress={setSelectionToEnd}
-        title={'Set selection to end\nof current selection'}
-      />
+      <Modal visible={isModalVisible}>
+        <Button
+          title="Add emoji"
+          onPress={() => {
+            addEmojiToText();
+            setIsModalVisible(false);
+            setTimeout(() => {
+              textInputRef.current?.focus();
+            }, 500);
+          }}
+        />
+        <Button title="Close" onPress={() => setIsModalVisible(false)} />
+      </Modal>
+
+      <View style={styles.btnContainer}>
+        <Button
+          onPress={() => {
+            // Keyboard.dismiss();
+            setIsModalVisible(true);
+          }}
+          title={'Open emoji modal'}
+        />
+      </View>
       <TextInput
         ref={textInputRef}
         style={styles.input}
@@ -73,12 +117,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingBottom: 100,
   },
+  btnContainer: {
+    marginBottom: 40,
+  },
   input: {
     borderBottomWidth: 1,
     backgroundColor: 'lightgray',
     width: 300,
     height: 40,
     marginTop: 10,
+    textAlign: 'left',
   },
 });
 
